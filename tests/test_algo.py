@@ -13,7 +13,8 @@ ITERATIONS = 100
 
 
 @pytest.mark.parametrize(
-    "func, bounds, expected", [(lambda x: x ** 2, [(-5, 5)], 0)],
+    "func, bounds, expected",
+    [(lambda x: x ** 2, [(-5, 5)], 0), (lambda x: (x - 1) ** 2 + 3, [(-5, 5)], 1.0)],
 )
 def test_basic_functions(func, bounds, expected):
     algo = ConstantDE(iterations=ITERATIONS, seed=SEED)

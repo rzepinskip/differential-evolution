@@ -1,34 +1,83 @@
+from abc import ABC, abstractmethod
+from typing import Callable, List, Tuple
+
 import numpy as np
 
+
 # based on https://pablormier.github.io/2017/09/05/a-tutorial-on-differential-evolution-with-python/
-def differential_evolution(fobj, bounds, mut=0.8, crossp=0.7, popsize=20, its=1000):
-    dimensions = len(bounds)
-    pop = np.random.rand(popsize, dimensions)
-    min_b, max_b = np.asarray(bounds).T
-    diff = np.fabs(min_b - max_b)
-    pop_denorm = min_b + pop * diff
-    fitness = np.asarray([fobj(ind) for ind in pop_denorm])
-    best_idx = np.argmin(fitness)
-    best = pop_denorm[best_idx]
-    for i in range(its):
-        for j in range(popsize):
-            idxs = [idx for idx in range(popsize) if idx != j]
-            a, b, c = pop[np.random.choice(idxs, 3, replace = False)]
-            # mut = scaling factor
-            mutant = np.clip(a + mut * (b - c), 0, 1)
-            cross_points = np.random.rand(dimensions) < crossp
-            if not np.any(cross_points):
-                cross_points[np.random.randint(0, dimensions)] = True
-            trial = np.where(cross_points, mutant, pop[j])
-            trial_denorm = min_b + trial * diff
-            f = fobj(trial_denorm)
-            if f < fitness[j]:
-                fitness[j] = f
-                pop[j] = trial
-                if f < fitness[best_idx]:
-                    best_idx = j
-                    best = trial_denorm
-        yield best, fitness[best_idx]
+class DifferentialEvolution(ABC):
+    def __init__(
+        self, mutation_factor, crossover, population_size, iterations, seed,
+    ):
+        if seed:
+            np.random.seed(seed)
+
+        self.mutation_factor = mutation_factor
+        self.crossover = crossover
+        self.population_size = population_size
+        self.iterations = iterations
+
+    def run(
+        self, func: Callable[[List[float]], float], bounds: List[Tuple[float, float]]
+    ):
+        dimensions = len(bounds)
+        pop = np.random.rand(self.population_size, dimensions)
+
+        min_b, max_b = np.asarray(bounds).T
+        diff = np.fabs(min_b - max_b)
+        pop_denorm = min_b + pop * diff
+        fitness = np.asarray([func(ind) for ind in pop_denorm])
+        best_idx = np.argmin(fitness)
+        best = pop_denorm[best_idx]
+        for i in range(self.iterations):
+            for j in range(self.population_size):
+                idxs = [idx for idx in range(self.population_size) if idx != j]
+                a, b, c = pop[np.random.choice(idxs, 3, replace=False)]
+
+                # mutation_factor = scaling factor
+                mutation_factorant = np.clip(
+                    a + self.get_mutation_factor(pop) * (b - c), 0, 1
+                )
+                cross_points = np.random.rand(dimensions) < self.crossover
+                if not np.any(cross_points):
+                    cross_points[np.random.randint(0, dimensions)] = True
+                trial = np.where(cross_points, mutation_factorant, pop[j])
+                trial_denorm = min_b + trial * diff
+
+                f = func(trial_denorm)
+                if f < fitness[j]:
+                    fitness[j] = f
+                    pop[j] = trial
+                    if f < fitness[best_idx]:
+                        best_idx = j
+                        best = trial_denorm
+
+            yield best
+
+    @abstractmethod
+    def get_mutation_factor(self, current_population):
+        pass
 
 
-print(list(differential_evolution(lambda x: 2+x**2, [(-5, 5)]))[-1])
+class ConstantDE(DifferentialEvolution):
+    def __init__(
+        self,
+        mutation_factor=0.8,
+        crossover=0.7,
+        population_size=20,
+        iterations=1000,
+        seed=None,
+    ):
+        super().__init__(
+            mutation_factor=mutation_factor,
+            crossover=crossover,
+            population_size=population_size,
+            iterations=iterations,
+            seed=seed,
+        )
+
+    def get_mutation_factor(self, current_population):
+        return self.mutation_factor
+
+
+# print(list(differential_evolution(lambda x: 2 + x ** 2, [(-5, 5)]))[-1])

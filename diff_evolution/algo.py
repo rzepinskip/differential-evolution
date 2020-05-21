@@ -1,7 +1,7 @@
 import numpy as np
 
 # based on https://pablormier.github.io/2017/09/05/a-tutorial-on-differential-evolution-with-python/
-def de(fobj, bounds, mut=0.8, crossp=0.7, popsize=20, its=1000):
+def differential_evolution(fobj, bounds, mut=0.8, crossp=0.7, popsize=20, its=1000):
     dimensions = len(bounds)
     pop = np.random.rand(popsize, dimensions)
     min_b, max_b = np.asarray(bounds).T
@@ -14,6 +14,8 @@ def de(fobj, bounds, mut=0.8, crossp=0.7, popsize=20, its=1000):
         for j in range(popsize):
             idxs = [idx for idx in range(popsize) if idx != j]
             a, b, c = pop[np.random.choice(idxs, 3, replace = False)]
+
+            # mut = scaling factor
             mutant = np.clip(a + mut * (b - c), 0, 1)
             cross_points = np.random.rand(dimensions) < crossp
             if not np.any(cross_points):

@@ -14,7 +14,6 @@ def differential_evolution(fobj, bounds, mut=0.8, crossp=0.7, popsize=20, its=10
         for j in range(popsize):
             idxs = [idx for idx in range(popsize) if idx != j]
             a, b, c = pop[np.random.choice(idxs, 3, replace = False)]
-
             # mut = scaling factor
             mutant = np.clip(a + mut * (b - c), 0, 1)
             cross_points = np.random.rand(dimensions) < crossp
@@ -30,3 +29,6 @@ def differential_evolution(fobj, bounds, mut=0.8, crossp=0.7, popsize=20, its=10
                     best_idx = j
                     best = trial_denorm
         yield best, fitness[best_idx]
+
+
+print(list(differential_evolution(lambda x: 2+x**2, [(-5, 5)]))[-1])

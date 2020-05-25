@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
-from typing import Callable, List, Tuple
+from typing import List, Tuple
+from diff_evolution.algo_control import AlgorithmControl
 
 import numpy as np
 
@@ -7,7 +8,7 @@ import numpy as np
 # based on https://pablormier.github.io/2017/09/05/a-tutorial-on-differential-evolution-with-python/
 class DifferentialEvolution(ABC):
     def __init__(
-        self, mutation_factor, crossover, population_size, iterations, seed,
+        self, mutation_factor, crossover, population_size, seed,
     ):
         if seed:
             np.random.seed(seed)
@@ -15,10 +16,9 @@ class DifferentialEvolution(ABC):
         self.mutation_factor = mutation_factor
         self.crossover = crossover
         self.population_size = population_size
-        self.iterations = iterations
 
     def run(
-        self, func: Callable[[List[float]], float], bounds: List[Tuple[float, float]]
+        self, algorithm_control: AlgorithmControl, bounds: List[Tuple[float, float]]
     ):
         dimensions = len(bounds)
         pop = np.random.rand(self.population_size, dimensions)
@@ -26,10 +26,10 @@ class DifferentialEvolution(ABC):
         min_b, max_b = np.asarray(bounds).T
         diff = np.fabs(min_b - max_b)
         pop_denorm = min_b + pop * diff
-        fitness = np.asarray([func(ind) for ind in pop_denorm])
+        fitness = np.asarray([algorithm_control.test_func(ind) for ind in pop_denorm])
         best_idx = np.argmin(fitness)
         best = pop_denorm[best_idx]
-        for i in range(self.iterations):
+        while algorithm_control.check_stop_criteria():
             for j in range(self.population_size):
                 idxs = [idx for idx in range(self.population_size) if idx != j]
                 a, b, c = pop[np.random.choice(idxs, 3, replace=False)]
@@ -44,13 +44,14 @@ class DifferentialEvolution(ABC):
                 trial = np.where(cross_points, mutation_factorant, pop[j])
                 trial_denorm = min_b + trial * diff
 
-                f = func(trial_denorm)
+                f = algorithm_control.test_func(trial_denorm)
                 if f < fitness[j]:
                     fitness[j] = f
                     pop[j] = trial
                     if f < fitness[best_idx]:
                         best_idx = j
                         best = trial_denorm
+                        algorithm_control.update_best_fitness(f)
 
             yield best
 
@@ -65,14 +66,12 @@ class ConstantDE(DifferentialEvolution):
         mutation_factor=0.8,
         crossover=0.7,
         population_size=20,
-        iterations=1000,
         seed=None,
     ):
         super().__init__(
             mutation_factor=mutation_factor,
             crossover=crossover,
             population_size=population_size,
-            iterations=iterations,
             seed=seed,
         )
 

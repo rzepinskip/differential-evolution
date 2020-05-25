@@ -22,7 +22,7 @@ def test_basic_functions(func, bounds, expected):
     algo_control = AlgorithmControl(func, 1000, 1, expected)
 
     # https://stackoverflow.com/questions/2138873/cleanest-way-to-get-last-item-from-python-iterator
-    result = deque(algo.run(algo_control, bounds), maxlen=1).pop()
+    result = algo.run(algo_control, bounds)
 
     assert np.allclose(result, np.array(expected), atol=EPSILON)
 
@@ -36,7 +36,7 @@ def test_alpine():
 
     algo_control = AlgorithmControl(alpine_one, 1000, 1, 0)
 
-    result = deque(algo.run(algo_control, bounds), maxlen=1).pop()
+    result = algo.run(algo_control, bounds)
 
     assert np.allclose(result, np.array([0, 0]), atol=0.2)
 
@@ -52,7 +52,7 @@ def test_cec():
 
     algo_control = AlgorithmControl(call_cec, 100000, 1, 100)
 
-    result = deque(algo.run(algo_control, bounds), maxlen=1).pop()
+    result = algo.run(algo_control, bounds)
 
     # values taken from shift_data_1.txt
     assert np.allclose(result, np.array([-5.5276398498228005e+01,  -7.0429559718086182e+01]), atol=EPSILON)

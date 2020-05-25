@@ -53,7 +53,7 @@ class DifferentialEvolution(ABC):
                         best = trial_denorm
                         algorithm_control.update_best_fitness(f)
 
-            yield best
+        return best
 
     @abstractmethod
     def get_mutation_factor(self, current_population):

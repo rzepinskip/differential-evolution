@@ -1,8 +1,9 @@
 from abc import ABC, abstractmethod
 from typing import List, Tuple
-from diff_evolution.algo_control import AlgorithmControl
 
 import numpy as np
+
+from diff_evolution.algo_control import AlgorithmControl
 
 
 # based on https://pablormier.github.io/2017/09/05/a-tutorial-on-differential-evolution-with-python/
@@ -29,6 +30,7 @@ class DifferentialEvolution(ABC):
         fitness = np.asarray([algorithm_control.test_func(ind) for ind in pop_denorm])
         best_idx = np.argmin(fitness)
         best = pop_denorm[best_idx]
+        self.population_history = [pop]
         while algorithm_control.check_stop_criteria():
             for j in range(self.population_size):
                 idxs = [idx for idx in range(self.population_size) if idx != j]
@@ -53,6 +55,8 @@ class DifferentialEvolution(ABC):
                         best = trial_denorm
                         algorithm_control.update_best_fitness(f)
 
+            self.population_history += [pop]
+
         return best
 
     @abstractmethod
@@ -62,11 +66,7 @@ class DifferentialEvolution(ABC):
 
 class ConstantDE(DifferentialEvolution):
     def __init__(
-        self,
-        mutation_factor=0.8,
-        crossover=0.7,
-        population_size=20,
-        seed=None,
+        self, mutation_factor=0.8, crossover=0.7, population_size=20, seed=None,
     ):
         super().__init__(
             mutation_factor=mutation_factor,

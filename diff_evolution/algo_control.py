@@ -32,3 +32,6 @@ class AlgorithmControl():
 
     def update_best_fitness(self, fitness):
         self.best_fitness = fitness
+
+    def fill_up_recorder_values(self):
+        self.recorded_values.extend([self.error()] * (len(RECORDING_POINTS) - len(self.recorded_values)))

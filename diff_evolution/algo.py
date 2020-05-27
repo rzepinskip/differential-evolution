@@ -30,7 +30,7 @@ class DifferentialEvolution(ABC):
         fitness = np.asarray([algorithm_control.test_func(ind) for ind in pop_denorm])
         best_idx = np.argmin(fitness)
         best = pop_denorm[best_idx]
-        self.population_history = [pop]
+        self.population_history = [pop_denorm]
         while algorithm_control.check_stop_criteria():
             for j in range(self.population_size):
                 idxs = [idx for idx in range(self.population_size) if idx != j]
@@ -55,7 +55,8 @@ class DifferentialEvolution(ABC):
                         best = trial_denorm
                         algorithm_control.update_best_fitness(f)
 
-            self.population_history += [pop]
+            pop_denorm = min_b + pop * diff # just for debug
+            self.population_history += [pop_denorm]
 
         return best
 

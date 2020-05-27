@@ -8,7 +8,7 @@ def cec17_test_func(
     dims=2,
     objectives=1,
     func_num=1,
-    pdf_numeration=True,
+    pdf_numeration=False,
     dll_path=CDLL(os.path.abspath("diff_evolution/cec17_test_func.so")),
 ):
     # The 2nd function was removed from CEC-2017. Because of that an inconsistency in numbering has occurred. In `cec17_test_func.c` the original numbering has been preserved.

@@ -5,6 +5,7 @@ from diff_evolution.algo_control import AlgorithmControl, RECORDING_POINTS
 
 import time
 import itertools
+from functools import partial
 from multiprocessing import Pool
 import numpy as np
 from statistics import median, mean, stdev
@@ -19,7 +20,8 @@ PROCESSES_NUM = 4
 COMPLEXITY_MEASURE_FUNCTION_NUM = 1 # TMP TODO: Change to 18
 
 
-def run_single_problem(de: DifferentialEvolution, dims: int, func_num: int, max_fes = None):
+def run_single_problem(problem, de: DifferentialEvolution, max_fes = None):
+    dims, func_num = problem
     if max_fes is None:
         max_fes = MAX_FES_FACTOR * dims
     bounds = BOUNDS_1D * dims
@@ -37,13 +39,8 @@ def run_single_problem(de: DifferentialEvolution, dims: int, func_num: int, max_
 
     return algo_control.recorded_values, algo_control.error()
 
-def run_process(x):
-    dims, func_num = x
-    algo = ConstantDE()
-    res = run_single_problem(algo, dims, func_num)
-    return res
-
-def run_multi_problems(problems):
+def run_multi_problems(algorithm, problems):
+    run_process = partial(run_single_problem, de=algorithm)
     with Pool(PROCESSES_NUM) as p:
         resulsts = p.map(run_process, problems)
         return resulsts
@@ -90,16 +87,16 @@ def t1_function(dims):
         cec17_test_func(v_denorm, dims, func_num=COMPLEXITY_MEASURE_FUNCTION_NUM)
 
 def t2_function(algorithm, dims):
-    run_single_problem(algorithm, dims, COMPLEXITY_MEASURE_FUNCTION_NUM, 200000)
+    run_single_problem((dims, COMPLEXITY_MEASURE_FUNCTION_NUM), algorithm, 200000)
 
 
-def measure_performance(output_path):
+def measure_performance(algorithm, output_path):
     for dims in [10, 30, 50]:
         for func_num in range(1, 30):
             if func_num == 2:
                 continue
             print(f'Running test for function {func_num}, {dims} dims.')
-            res = run_multi_problems([(dims, func_num)] * 51)
+            res = run_multi_problems(algorithm, [(dims, func_num)] * 51)
             generate_output(res, dims, func_num, output_path)
 
 
@@ -133,5 +130,5 @@ def measure_complexity(algorithm, output_path):
 if __name__ == '__main__':
     de = ConstantDE()
 
-    # measure_performance()
+    measure_performance(de, '.')
     measure_complexity(de, '.')

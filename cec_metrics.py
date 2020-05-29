@@ -88,7 +88,7 @@ def save_metrics_to_csv(file_path, metrics: dict):
 
 def t0_function():
     for _ in range(1000000):
-        x = 0.55  # changed!!! TODO: write about it in the report
+        x = 0.55  # moved inside loop becaouse of exception
         x = x + x
         x = x / 2
         x = x * x

@@ -10,7 +10,6 @@ def cec17_test_func(
     func_num=1,
     dll_path=CDLL(os.path.abspath("diff_evolution/cec17_test_func.so")),
 ):
-    # TODO add to report
     # The 2nd function was removed from CEC-2017. Because of that an inconsistency in numbering has occurred. In `cec17_test_func.c` the original numbering has been preserved.
     # In https://github.com/P-N-Suganthan/CEC2017-BoundContrained/blob/master/Definitions%20of%20%20CEC2017%20benchmark%20suite%20final%20version%20updated.pdf
     # the 2nd function was completely removed and other functions have been renumbered (3 -> 2, 4 -> 3, etc.)

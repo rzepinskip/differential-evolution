@@ -153,7 +153,7 @@ class ConstantSuccessRuleDE(DifferentialEvolution):
                 self.mutation_factor = 1.22 * self.mutation_factor
             else:
                 self.mutation_factor = 0.82 * self.mutation_factor
-
+            self.mutation_factor = np.clip(self.mutation_factor, 0.5, 2.0)
         return best
 
 
@@ -222,5 +222,6 @@ class RandomSuccessRuleDE(DifferentialEvolution):
                 self.mutation_factor = (
                     np.random.uniform(low=0.5, high=1.0) * self.mutation_factor
                 )
+            self.mutation_factor = np.clip(self.mutation_factor, 0.5, 2.0)
 
         return best

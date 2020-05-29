@@ -8,6 +8,7 @@ from functools import partial
 from multiprocessing import Pool
 from statistics import mean, median, stdev
 
+import click
 import numpy as np
 
 from diff_evolution.algo import ConstantDE, DifferentialEvolution
@@ -152,8 +153,22 @@ def measure_complexity(algorithm, output_path):
         )
 
 
-if __name__ == "__main__":
-    de = ConstantDE()
+@click.command()
+@click.option('--performance/--complexity', '-p/-c', help='Select which measures to calculate', required=True)
+@click.option('--output-dir', '-o', required=True, help='Output directory', type=click.Path(exists=True, file_okay=False, dir_okay=True))
+@click.option('--algo', '-a', required=True, help='Algorithm version name (class name)', type=str)
+def run_measurements(performance, output_dir, algo):
+    alogrithms = {
+        ConstantDE.__name__: ConstantDE,
+    }
 
-    measure_performance(de, ".")
-    measure_complexity(de, ".")
+    de = alogrithms[algo]()
+
+    if performance:
+        measure_performance(de, output_dir)
+    else:
+        measure_complexity(de, output_dir)
+
+
+if __name__ == "__main__":
+    run_measurements()

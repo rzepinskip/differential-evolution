@@ -49,7 +49,7 @@ def run_multi_problems(algorithm, problems):
         return resulsts
 
 
-def generate_output(algo_results, dims, func_num, output_path):
+def generate_output(algorithm, algo_results, dims, func_num, output_path):
     res_table = np.zeros((len(RECORDING_POINTS), len(algo_results)))
     for i, algo_result in enumerate(algo_results):
         res_table[:, i] = algo_result[0]
@@ -65,10 +65,10 @@ def generate_output(algo_results, dims, func_num, output_path):
     }
 
     np.savetxt(
-        os.path.join(output_path, f"{de.__class__.__name__}_{func_num}_{dims}.txt"), res_table, delimiter=","
+        os.path.join(output_path, f"{algorithm.__class__.__name__}_{func_num}_{dims}.txt"), res_table, delimiter=","
     )
 
-    save_metrics_to_csv(f"{de.__class__.__name__}_metrics_{dims}.csv", metrics)
+    save_metrics_to_csv(f"{algorithm.__class__.__name__}_metrics_{dims}.csv", metrics)
 
 
 def save_metrics_to_csv(file_path, metrics: dict):
@@ -120,7 +120,7 @@ def measure_performance(algorithm, output_path):
                 continue
             print(f"Running test for function {func_num}, {dims} dims.")
             res = run_multi_problems(algorithm, [(dims, func_num)] * 51)
-            generate_output(res, dims, func_num, output_path)
+            generate_output(algorithm, res, dims, func_num, output_path)
 
 
 def measure_complexity(algorithm, output_path):

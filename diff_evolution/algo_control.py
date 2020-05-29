@@ -16,6 +16,8 @@ class AlgorithmControl():
 
     def test_func(self, x):
         self.fes += 1
+        if self.fes >= self.max_fes:
+            return None
         if self.fes >= RECORDING_POINTS[len(self.recorded_values)] * self.max_fes:
             self.recorded_values.append(self.error())
         return self.func(x)

@@ -47,6 +47,8 @@ class DifferentialEvolution(ABC):
                 trial_denorm = min_b + trial * diff
 
                 f = algorithm_control.test_func(trial_denorm)
+                if f is None:
+                    break
                 if f < fitness[j]:
                     fitness[j] = f
                     pop[j] = trial
@@ -133,6 +135,8 @@ class ConstantSuccessRuleDE(DifferentialEvolution):
                 trial_denorm = min_b + trial * diff
 
                 f = algorithm_control.test_func(trial_denorm)
+                if f is None:
+                    break
                 if f < fitness[j]:
                     fitness[j] = f
                     pop[j] = trial
@@ -196,6 +200,8 @@ class RandomSuccessRuleDE(DifferentialEvolution):
                 trial_denorm = min_b + trial * diff
 
                 f = algorithm_control.test_func(trial_denorm)
+                if f is None:
+                    break
                 if f < fitness[j]:
                     fitness[j] = f
                     pop[j] = trial

@@ -9,12 +9,11 @@ from diff_evolution.algo_control import AlgorithmControl
 # based on https://pablormier.github.io/2017/09/05/a-tutorial-on-differential-evolution-with-python/
 class DifferentialEvolution(ABC):
     def __init__(
-        self, mutation_factor, crossover, population_size, seed,
+        self, crossover, population_size, seed,
     ):
         if seed:
             np.random.seed(seed)
 
-        self.mutation_factor = mutation_factor
         self.crossover = crossover
         self.population_size = population_size
 
@@ -55,7 +54,7 @@ class DifferentialEvolution(ABC):
                         best = trial_denorm
                         algorithm_control.update_best_fitness(f)
 
-            pop_denorm = min_b + pop * diff # just for debug
+            pop_denorm = min_b + pop * diff  # just for debug
             self.population_history += [pop_denorm]
 
         return best
@@ -67,17 +66,154 @@ class DifferentialEvolution(ABC):
 
 class ConstantDE(DifferentialEvolution):
     def __init__(
-        self, mutation_factor=0.8, crossover=0.7, population_size=20, seed=None,
+        self, mutation_factor=0.8, crossover=0.9, population_size=20, seed=None,
     ):
         super().__init__(
-            mutation_factor=mutation_factor,
-            crossover=crossover,
-            population_size=population_size,
-            seed=seed,
+            crossover=crossover, population_size=population_size, seed=seed,
         )
+        self.mutation_factor = mutation_factor
 
     def get_mutation_factor(self, current_population):
         return self.mutation_factor
 
 
-# print(list(differential_evolution(lambda x: 2 + x ** 2, [(-5, 5)]))[-1])
+class RandomFactorDE(DifferentialEvolution):
+    def __init__(
+        self, crossover=0.9, population_size=20, seed=None,
+    ):
+        super().__init__(
+            crossover=crossover, population_size=population_size, seed=seed,
+        )
+
+    def get_mutation_factor(self, current_population):
+        return np.random.uniform(low=0.5, high=1.0)
+
+
+class ConstantSuccessRuleDE(DifferentialEvolution):
+    def __init__(
+        self, mutation_factor=0.8, crossover=0.9, population_size=20, seed=None,
+    ):
+        super().__init__(
+            crossover=crossover, population_size=population_size, seed=seed,
+        )
+        self.mutation_factor = mutation_factor
+
+    def get_mutation_factor(self, current_population):
+        return self.mutation_factor
+
+    def run(
+        self, algorithm_control: AlgorithmControl, bounds: List[Tuple[float, float]]
+    ):
+        dimensions = len(bounds)
+        pop = np.random.rand(self.population_size, dimensions)
+
+        min_b, max_b = np.asarray(bounds).T
+        diff = np.fabs(min_b - max_b)
+        pop_denorm = min_b + pop * diff
+        fitness = np.asarray([algorithm_control.test_func(ind) for ind in pop_denorm])
+        best_idx = np.argmin(fitness)
+        best = pop_denorm[best_idx]
+        self.population_history = [pop_denorm]
+        while algorithm_control.check_stop_criteria():
+            mean_prev_pop_member = np.mean(pop, axis=0)
+            mean_prev_pop_member_fit = algorithm_control.test_func(mean_prev_pop_member)
+
+            for j in range(self.population_size):
+                idxs = [idx for idx in range(self.population_size) if idx != j]
+                a, b, c = pop[np.random.choice(idxs, 3, replace=False)]
+
+                mutation_factorant = np.clip(
+                    a + self.get_mutation_factor(pop) * (b - c), 0, 1
+                )
+                cross_points = np.random.rand(dimensions) < self.crossover
+                if not np.any(cross_points):
+                    cross_points[np.random.randint(0, dimensions)] = True
+                trial = np.where(cross_points, mutation_factorant, pop[j])
+                trial_denorm = min_b + trial * diff
+
+                f = algorithm_control.test_func(trial_denorm)
+                if f < fitness[j]:
+                    fitness[j] = f
+                    pop[j] = trial
+                    if f < fitness[best_idx]:
+                        best_idx = j
+                        best = trial_denorm
+                        algorithm_control.update_best_fitness(f)
+
+            pop_denorm = min_b + pop * diff  # just for debug
+            self.population_history += [pop_denorm]
+
+            better_than_mean = sum(fitness > mean_prev_pop_member_fit)
+            if better_than_mean > 0.2 * self.population_size:
+                self.mutation_factor = 1.22 * self.mutation_factor
+            else:
+                self.mutation_factor = 0.82 * self.mutation_factor
+
+        return best
+
+
+class RandomSuccessRuleDE(DifferentialEvolution):
+    def __init__(
+        self, mutation_factor=0.8, crossover=0.9, population_size=20, seed=None,
+    ):
+        super().__init__(
+            crossover=crossover, population_size=population_size, seed=seed,
+        )
+        self.mutation_factor = mutation_factor
+
+    def get_mutation_factor(self, current_population):
+        return self.mutation_factor
+
+    def run(
+        self, algorithm_control: AlgorithmControl, bounds: List[Tuple[float, float]]
+    ):
+        dimensions = len(bounds)
+        pop = np.random.rand(self.population_size, dimensions)
+
+        min_b, max_b = np.asarray(bounds).T
+        diff = np.fabs(min_b - max_b)
+        pop_denorm = min_b + pop * diff
+        fitness = np.asarray([algorithm_control.test_func(ind) for ind in pop_denorm])
+        best_idx = np.argmin(fitness)
+        best = pop_denorm[best_idx]
+        self.population_history = [pop_denorm]
+        while algorithm_control.check_stop_criteria():
+            mean_prev_pop_member = np.mean(pop, axis=0)
+            mean_prev_pop_member_fit = algorithm_control.test_func(mean_prev_pop_member)
+
+            for j in range(self.population_size):
+                idxs = [idx for idx in range(self.population_size) if idx != j]
+                a, b, c = pop[np.random.choice(idxs, 3, replace=False)]
+
+                mutation_factorant = np.clip(
+                    a + self.get_mutation_factor(pop) * (b - c), 0, 1
+                )
+                cross_points = np.random.rand(dimensions) < self.crossover
+                if not np.any(cross_points):
+                    cross_points[np.random.randint(0, dimensions)] = True
+                trial = np.where(cross_points, mutation_factorant, pop[j])
+                trial_denorm = min_b + trial * diff
+
+                f = algorithm_control.test_func(trial_denorm)
+                if f < fitness[j]:
+                    fitness[j] = f
+                    pop[j] = trial
+                    if f < fitness[best_idx]:
+                        best_idx = j
+                        best = trial_denorm
+                        algorithm_control.update_best_fitness(f)
+
+            pop_denorm = min_b + pop * diff  # just for debug
+            self.population_history += [pop_denorm]
+
+            better_than_mean = sum(fitness > mean_prev_pop_member_fit)
+            if better_than_mean > 0.2 * self.population_size:
+                self.mutation_factor = (
+                    np.random.uniform(low=1.0, high=1.5) * self.mutation_factor
+                )
+            else:
+                self.mutation_factor = (
+                    np.random.uniform(low=0.5, high=1.0) * self.mutation_factor
+                )
+
+        return best

@@ -1,9 +1,9 @@
+import csv
 import itertools
 import json
 import math
 import os
 import time
-import csv
 from functools import partial
 from multiprocessing import Pool
 from statistics import mean, median, stdev
@@ -65,10 +65,17 @@ def generate_output(algorithm, algo_results, dims, func_num, output_path):
     }
 
     np.savetxt(
-        os.path.join(output_path, f"{algorithm.__class__.__name__}_{func_num}_{dims}.txt"), res_table, delimiter=","
+        os.path.join(
+            output_path, f"{algorithm.__class__.__name__}_{func_num}_{dims}.txt"
+        ),
+        res_table,
+        delimiter=",",
     )
 
-    save_metrics_to_csv(f"{algorithm.__class__.__name__}_metrics_{dims}.csv", metrics)
+    save_metrics_to_csv(
+        os.path.join(output_path, f"{algorithm.__class__.__name__}_metrics_{dims}.csv"),
+        metrics,
+    )
 
 
 def save_metrics_to_csv(file_path, metrics: dict):
@@ -78,7 +85,7 @@ def save_metrics_to_csv(file_path, metrics: dict):
     if not os.path.isfile(file_path):
         write_header = True
 
-    with open(file_path, mode='a', newline='\n') as csv_file:
+    with open(file_path, mode="a", newline="\n") as csv_file:
         writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
 
         if write_header:
@@ -154,9 +161,22 @@ def measure_complexity(algorithm, output_path):
 
 
 @click.command()
-@click.option('--performance/--complexity', '-p/-c', help='Select which measures to calculate', required=True)
-@click.option('--output-dir', '-o', required=True, help='Output directory', type=click.Path(exists=True, file_okay=False, dir_okay=True))
-@click.option('--algo', '-a', required=True, help='Algorithm version name (class name)', type=str)
+@click.option(
+    "--performance/--complexity",
+    "-p/-c",
+    help="Select which measures to calculate",
+    required=True,
+)
+@click.option(
+    "--output-dir",
+    "-o",
+    required=True,
+    help="Output directory",
+    type=click.Path(exists=True, file_okay=False, dir_okay=True),
+)
+@click.option(
+    "--algo", "-a", required=True, help="Algorithm version name (class name)", type=str
+)
 def run_measurements(performance, output_dir, algo):
     alogrithms = {
         ConstantDE.__name__: ConstantDE,

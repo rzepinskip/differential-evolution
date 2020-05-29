@@ -3,6 +3,7 @@ import json
 import math
 import os
 import time
+import csv
 from functools import partial
 from multiprocessing import Pool
 from statistics import mean, median, stdev
@@ -54,6 +55,7 @@ def generate_output(algo_results, dims, func_num, output_path):
 
     errors = [el[1] for el in algo_results]
     metrics = {
+        "func.": func_num,
         "best": min(errors),
         "worst": max(errors),
         "median": median(errors),
@@ -65,8 +67,22 @@ def generate_output(algo_results, dims, func_num, output_path):
         os.path.join(output_path, f"{func_num}_{dims}.txt"), res_table, delimiter=","
     )
 
-    with open(os.path.join(output_path, f"metrics_{func_num}_{dims}.json"), "w") as f:
-        json.dump(metrics, f)
+    save_metrics_to_csv(f"metrics_{dims}.csv", metrics)
+
+
+def save_metrics_to_csv(file_path, metrics: dict):
+    fieldnames = ["func.", "best", "worst", "median", "mean", "std"]
+
+    write_header = False
+    if not os.path.isfile(file_path):
+        write_header = True
+
+    with open(file_path, mode='a', newline='\n') as csv_file:
+        writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+
+        if write_header:
+            writer.writeheader()
+        writer.writerow(metrics)
 
 
 def t0_function():

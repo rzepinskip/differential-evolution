@@ -64,10 +64,10 @@ def generate_output(algo_results, dims, func_num, output_path):
     }
 
     np.savetxt(
-        os.path.join(output_path, f"{func_num}_{dims}.txt"), res_table, delimiter=","
+        os.path.join(output_path, f"{de.__class__.__name__}_{func_num}_{dims}.txt"), res_table, delimiter=","
     )
 
-    save_metrics_to_csv(f"metrics_{dims}.csv", metrics)
+    save_metrics_to_csv(f"{de.__class__.__name__}_metrics_{dims}.csv", metrics)
 
 
 def save_metrics_to_csv(file_path, metrics: dict):

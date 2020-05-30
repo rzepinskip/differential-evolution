@@ -62,11 +62,11 @@ def generate_output(algorithm, algo_results, dims, func_num, output_path):
     errors = [el[1] for el in algo_results]
     metrics = {
         "func.": func_num,
-        "best": min(errors),
-        "worst": max(errors),
-        "median": median(errors),
-        "mean": mean(errors),
-        "std": stdev(errors),
+        "best": f"{min(errors):.2E}",
+        "worst": f"{max(errors):.2E}",
+        "median": f"{median(errors):.2E}",
+        "mean": f"{mean(errors):.2E}",
+        "std": f"{stdev(errors):.2E}",
     }
 
     np.savetxt(

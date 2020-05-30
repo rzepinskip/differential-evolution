@@ -11,7 +11,12 @@ from statistics import mean, median, stdev
 import click
 import numpy as np
 
-from diff_evolution.algo import ConstantDE, DifferentialEvolution
+from diff_evolution.algo import (
+    ConstantDE,
+    ConstantSuccessRuleDE,
+    DifferentialEvolution,
+    RandomSuccessRuleDE,
+)
 from diff_evolution.algo_control import RECORDING_POINTS, AlgorithmControl
 from diff_evolution.cec17_functions import cec17_test_func
 
@@ -180,6 +185,8 @@ def measure_complexity(algorithm, output_path):
 def run_measurements(performance, output_dir, algo):
     alogrithms = {
         ConstantDE.__name__: ConstantDE,
+        ConstantSuccessRuleDE.__name__: ConstantSuccessRuleDE,
+        RandomSuccessRuleDE.__name__: RandomSuccessRuleDE,
     }
 
     de = alogrithms[algo]()

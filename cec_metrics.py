@@ -11,7 +11,13 @@ from statistics import mean, median, stdev
 import click
 import numpy as np
 
-from diff_evolution.algo import ConstantDE, ConstantSuccessRuleDE, DifferentialEvolution, RandomSuccessRuleDE, init_population_uniform
+from diff_evolution.algo import (
+    ConstantDE,
+    ConstantSuccessRuleDE,
+    DifferentialEvolution,
+    RandomSuccessRuleDE,
+    init_population_uniform,
+)
 from diff_evolution.algo_control import RECORDING_POINTS, AlgorithmControl
 from diff_evolution.cec17_functions import cec17_test_func
 

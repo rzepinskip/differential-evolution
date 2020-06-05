@@ -4,7 +4,12 @@ from collections import deque
 import numpy as np
 import pytest
 
-from diff_evolution.algo import ConstantDE, ConstantSuccessRuleDE, RandomFactorDE, RandomSuccessRuleDE, init_population_uniform
+from diff_evolution.algo import (
+    ConstantDE,
+    ConstantSuccessRuleDE,
+    RandomSuccessRuleDE,
+    init_population_uniform,
+)
 from diff_evolution.algo_control import AlgorithmControl
 from diff_evolution.cec17_functions import cec17_test_func
 
@@ -13,7 +18,6 @@ SEED = 44
 
 tested_algos = [
     ConstantDE,
-    RandomFactorDE,
     ConstantSuccessRuleDE,
     RandomSuccessRuleDE,
 ]

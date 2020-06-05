@@ -17,6 +17,10 @@ def init_population_uniform(population_size, bounds: List[Tuple[float, float]]):
     return pop
 
 
+def within_bounds(x, mn, mx):
+    return not ((x < mn) | (x > mx)).any()
+
+
 # based on https://pablormier.github.io/2017/09/05/a-tutorial-on-differential-evolution-with-python/
 class DifferentialEvolution(ABC):
     def __init__(
@@ -44,17 +48,19 @@ class DifferentialEvolution(ABC):
         algorithm_control.update_best_fitness(fitness[best_idx])
         best = pop[best_idx]
         self.population_history = [pop]
+        mn, mx = np.array(bounds).T
         while algorithm_control.check_stop_criteria():
             for j in range(population_size):
                 idxs = [idx for idx in range(population_size) if idx != j]
-                a, b, c = pop[np.random.choice(idxs, 3, replace=False)]
+                for retry in range(population_size):
+                    a, b, c = pop[np.random.choice(idxs, 3, replace=False)]
+                    mutation_factorant = a + self.mutation_factor * (b - c)
 
-                # mutation_factor = scaling factor
-                mutation_factorant = np.clip(
-                    a + self.mutation_factor * (b - c),
-                    [b[0] for b in bounds],
-                    [b[1] for b in bounds],
-                )
+                    if within_bounds(mutation_factorant, mn, mx):
+                        break
+                    elif retry == population_size - 1:
+                        mutation_factorant = np.clip(mutation_factorant, mn, mx,)
+
                 cross_points = np.random.rand(dimensions) < self.crossover
                 trial = np.where(cross_points, mutation_factorant, pop[j])
 
@@ -108,6 +114,7 @@ class ConstantSuccessRuleDE(DifferentialEvolution):
         algorithm_control.update_best_fitness(fitness[best_idx])
         best = pop[best_idx]
         self.population_history = [pop]
+        mn, mx = np.array(bounds).T
         while algorithm_control.check_stop_criteria():
             mean_prev_pop_member = np.mean(pop, axis=0)
             mean_prev_pop_member_fit = algorithm_control.test_func(mean_prev_pop_member)
@@ -116,13 +123,15 @@ class ConstantSuccessRuleDE(DifferentialEvolution):
 
             for j in range(population_size):
                 idxs = [idx for idx in range(population_size) if idx != j]
-                a, b, c = pop[np.random.choice(idxs, 3, replace=False)]
+                for retry in range(population_size):
+                    a, b, c = pop[np.random.choice(idxs, 3, replace=False)]
+                    mutation_factorant = a + self.mutation_factor * (b - c)
 
-                mutation_factorant = np.clip(
-                    a + self.mutation_factor * (b - c),
-                    [b[0] for b in bounds],
-                    [b[1] for b in bounds],
-                )
+                    if within_bounds(mutation_factorant, mn, mx):
+                        break
+                    elif retry == population_size - 1:
+                        mutation_factorant = np.clip(mutation_factorant, mn, mx,)
+
                 cross_points = np.random.rand(dimensions) < self.crossover
                 trial = np.where(cross_points, mutation_factorant, pop[j])
 
@@ -174,6 +183,7 @@ class RandomSuccessRuleDE(DifferentialEvolution):
         algorithm_control.update_best_fitness(fitness[best_idx])
         best = pop[best_idx]
         self.population_history = [pop]
+        mn, mx = np.array(bounds).T
         while algorithm_control.check_stop_criteria():
             mean_prev_pop_member = np.mean(pop, axis=0)
             mean_prev_pop_member_fit = algorithm_control.test_func(mean_prev_pop_member)
@@ -182,13 +192,15 @@ class RandomSuccessRuleDE(DifferentialEvolution):
 
             for j in range(population_size):
                 idxs = [idx for idx in range(population_size) if idx != j]
-                a, b, c = pop[np.random.choice(idxs, 3, replace=False)]
+                for retry in range(population_size):
+                    a, b, c = pop[np.random.choice(idxs, 3, replace=False)]
+                    mutation_factorant = a + self.mutation_factor * (b - c)
 
-                mutation_factorant = np.clip(
-                    a + self.mutation_factor * (b - c),
-                    [b[0] for b in bounds],
-                    [b[1] for b in bounds],
-                )
+                    if within_bounds(mutation_factorant, mn, mx):
+                        break
+                    elif retry == population_size - 1:
+                        mutation_factorant = np.clip(mutation_factorant, mn, mx,)
+
                 cross_points = np.random.rand(dimensions) < self.crossover
                 trial = np.where(cross_points, mutation_factorant, pop[j])
 

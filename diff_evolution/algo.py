@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List, Tuple, Callable
+from typing import Callable, List, Tuple
 
 import numpy as np
 
@@ -28,7 +28,11 @@ class DifferentialEvolution(ABC):
         self.crossover = crossover
 
     def run(
-        self, algorithm_control: AlgorithmControl, bounds: List[Tuple[float, float]], population_initializer: Callable, population_size = None
+        self,
+        algorithm_control: AlgorithmControl,
+        bounds: List[Tuple[float, float]],
+        population_initializer: Callable,
+        population_size=None,
     ):
         dimensions = len(bounds)
         if not population_size:
@@ -47,7 +51,9 @@ class DifferentialEvolution(ABC):
 
                 # mutation_factor = scaling factor
                 mutation_factorant = np.clip(
-                    a + self.get_mutation_factor(pop) * (b - c), [b[0] for b in bounds], [b[1] for b in bounds]
+                    a + self.get_mutation_factor(pop) * (b - c),
+                    [b[0] for b in bounds],
+                    [b[1] for b in bounds],
                 )
                 cross_points = np.random.rand(dimensions) < self.crossover
                 if not np.any(cross_points):
@@ -87,18 +93,6 @@ class ConstantDE(DifferentialEvolution):
         return self.mutation_factor
 
 
-class RandomFactorDE(DifferentialEvolution):
-    def __init__(
-        self, crossover=0.9, seed=None,
-    ):
-        super().__init__(
-            crossover=crossover, seed=seed,
-        )
-
-    def get_mutation_factor(self, current_population):
-        return np.random.uniform(low=0.5, high=1.0)
-
-
 class ConstantSuccessRuleDE(DifferentialEvolution):
     def __init__(
         self, mutation_factor=0.8, crossover=0.9, seed=None,
@@ -112,7 +106,11 @@ class ConstantSuccessRuleDE(DifferentialEvolution):
         return self.mutation_factor
 
     def run(
-        self, algorithm_control: AlgorithmControl, bounds: List[Tuple[float, float]], population_initializer: Callable, population_size = None
+        self,
+        algorithm_control: AlgorithmControl,
+        bounds: List[Tuple[float, float]],
+        population_initializer: Callable,
+        population_size=None,
     ):
         dimensions = len(bounds)
         if not population_size:
@@ -135,7 +133,9 @@ class ConstantSuccessRuleDE(DifferentialEvolution):
                 a, b, c = pop[np.random.choice(idxs, 3, replace=False)]
 
                 mutation_factorant = np.clip(
-                    a + self.get_mutation_factor(pop) * (b - c), [b[0] for b in bounds], [b[1] for b in bounds]
+                    a + self.get_mutation_factor(pop) * (b - c),
+                    [b[0] for b in bounds],
+                    [b[1] for b in bounds],
                 )
                 cross_points = np.random.rand(dimensions) < self.crossover
                 if not np.any(cross_points):
@@ -177,7 +177,11 @@ class RandomSuccessRuleDE(DifferentialEvolution):
         return self.mutation_factor
 
     def run(
-        self, algorithm_control: AlgorithmControl, bounds: List[Tuple[float, float]], population_initializer: Callable, population_size = None
+        self,
+        algorithm_control: AlgorithmControl,
+        bounds: List[Tuple[float, float]],
+        population_initializer: Callable,
+        population_size=None,
     ):
         dimensions = len(bounds)
         if not population_size:
@@ -200,7 +204,9 @@ class RandomSuccessRuleDE(DifferentialEvolution):
                 a, b, c = pop[np.random.choice(idxs, 3, replace=False)]
 
                 mutation_factorant = np.clip(
-                    a + self.get_mutation_factor(pop) * (b - c), [b[0] for b in bounds], [b[1] for b in bounds]
+                    a + self.get_mutation_factor(pop) * (b - c),
+                    [b[0] for b in bounds],
+                    [b[1] for b in bounds],
                 )
                 cross_points = np.random.rand(dimensions) < self.crossover
                 if not np.any(cross_points):

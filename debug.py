@@ -2,12 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.animation import FuncAnimation
 
-from diff_evolution.algo import (
-    ConstantDE,
-    ConstantSuccessRuleDE,
-    RandomFactorDE,
-    RandomSuccessRuleDE,
-)
+from diff_evolution.algo import ConstantDE, ConstantSuccessRuleDE, RandomFactorDE, RandomSuccessRuleDE, init_population_uniform
 from diff_evolution.algo_control import AlgorithmControl
 from diff_evolution.cec17_functions import cec17_test_func
 
@@ -100,7 +95,7 @@ for func_num in tested_funcs:
 
     target_value = TARGET_VALUE_FACTOR * func_num
     algo_control = AlgorithmControl(call_cec, max_fes, dims, target_value)
-    best_point = algo.run(algo_control, bounds)
+    best_point = algo.run(algo_control, bounds, init_population_uniform)
 
     print(f"Error [{func_num}]: {abs(call_cec(best_point) - target_value)}")
 

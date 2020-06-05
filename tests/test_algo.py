@@ -4,12 +4,7 @@ from collections import deque
 import numpy as np
 import pytest
 
-from diff_evolution.algo import (
-    ConstantDE,
-    ConstantSuccessRuleDE,
-    RandomFactorDE,
-    RandomSuccessRuleDE,
-)
+from diff_evolution.algo import ConstantDE, ConstantSuccessRuleDE, RandomFactorDE, RandomSuccessRuleDE, init_population_uniform
 from diff_evolution.algo_control import AlgorithmControl
 from diff_evolution.cec17_functions import cec17_test_func
 
@@ -39,7 +34,7 @@ def test_basic_functions(algo_version, func, bounds, expected):
     algo_control = AlgorithmControl(func, 1000, 1, expected)
 
     # https://stackoverflow.com/questions/2138873/cleanest-way-to-get-last-item-from-python-iterator
-    result = algo.run(algo_control, bounds)
+    result = algo.run(algo_control, bounds, init_population_uniform)
 
     assert np.allclose(result, np.array(expected), atol=EPSILON)
 
@@ -53,7 +48,7 @@ def test_alpine(algo_version):
 
     algo_control = AlgorithmControl(alpine_one, 1000, 1, 0)
 
-    result = algo.run(algo_control, bounds)
+    result = algo.run(algo_control, bounds, init_population_uniform)
 
     assert np.allclose(result, np.array([0, 0]), atol=0.2)
 
@@ -69,7 +64,7 @@ def test_cec(algo_version):
     algo = algo_version(seed=SEED)
     algo_control = AlgorithmControl(call_cec, 100000, 1, 100)
 
-    result = algo.run(algo_control, bounds)
+    result = algo.run(algo_control, bounds, init_population_uniform)
 
     # values taken from shift_data_1.txt
     assert np.allclose(

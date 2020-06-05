@@ -11,12 +11,7 @@ from statistics import mean, median, stdev
 import click
 import numpy as np
 
-from diff_evolution.algo import (
-    ConstantDE,
-    ConstantSuccessRuleDE,
-    DifferentialEvolution,
-    RandomSuccessRuleDE,
-)
+from diff_evolution.algo import ConstantDE, ConstantSuccessRuleDE, DifferentialEvolution, RandomSuccessRuleDE, init_population_uniform
 from diff_evolution.algo_control import RECORDING_POINTS, AlgorithmControl
 from diff_evolution.cec17_functions import cec17_test_func
 
@@ -39,7 +34,7 @@ def run_single_problem(problem, de: DifferentialEvolution, max_fes=None):
 
     algo_control = AlgorithmControl(call_cec, max_fes, dims, target_value)
 
-    de.run(algo_control, bounds)
+    de.run(algo_control, bounds, init_population_uniform)
 
     algo_control.fill_up_recorder_values()
 

@@ -52,7 +52,7 @@ def test_alpine(algo_version):
 
     algo_control = AlgorithmControl(alpine_one, 1000, 1, 0)
 
-    result = algo.run(algo_control, bounds, init_population_uniform)
+    result = algo.run(algo_control, bounds, init_population_uniform, population_size=20)
 
     assert np.allclose(result, np.array([0, 0]), atol=0.2)
 

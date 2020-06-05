@@ -2,7 +2,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.animation import FuncAnimation
 
-from diff_evolution.algo import ConstantDE, ConstantSuccessRuleDE, RandomFactorDE, RandomSuccessRuleDE, init_population_uniform
+from diff_evolution.algo import (
+    ConstantDE,
+    ConstantSuccessRuleDE,
+    RandomSuccessRuleDE,
+    init_population_uniform,
+)
 from diff_evolution.algo_control import AlgorithmControl
 from diff_evolution.cec17_functions import cec17_test_func
 
@@ -85,7 +90,7 @@ dims = 2
 max_fes = MAX_FES_FACTOR * dims
 bounds = BOUNDS_1D * dims
 
-tested_funcs = range(3, 4)
+tested_funcs = range(3, 10)
 for func_num in tested_funcs:
     algo = ConstantDE(seed=44)
 
@@ -99,6 +104,6 @@ for func_num in tested_funcs:
 
     print(f"Error [{func_num}]: {abs(call_cec(best_point) - target_value)}")
 
-    # plot_fitness(algo, target_value)
+    plot_fitness(algo, target_value)
     # save_convergence_history(algo, func_num)
-    plot_population_with_levels(algo, func_num, step=0)
+    # plot_population_with_levels(algo, func_num, step=0)

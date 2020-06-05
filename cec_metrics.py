@@ -24,7 +24,6 @@ MAX_FES_FACTOR = 10000
 TARGET_VALUE_FACTOR = 100
 BOUNDS_1D = [(-100, 100)]
 PROCESSES_NUM = 4
-COMPLEXITY_MEASURE_FUNCTION_NUM = 18
 
 
 def run_single_problem(problem, de: DifferentialEvolution, max_fes=None):
@@ -98,33 +97,6 @@ def save_metrics_to_csv(file_path, metrics: dict):
         writer.writerow(metrics)
 
 
-def t0_function():
-    for _ in range(1000000):
-        x = 0.55  # moved inside loop becaouse of exception
-        x = x + x
-        x = x / 2
-        x = x * x
-        x = math.sqrt(x)
-        x = math.log(x)
-        x = math.exp(x)
-        x = x / (x + 2)
-
-
-def t1_function(dims):
-    v = np.random.rand(dims)
-
-    min_b, max_b = BOUNDS_1D[0][0], BOUNDS_1D[0][1]
-    diff = np.fabs(min_b - max_b)
-    v_denorm = min_b + v * diff
-
-    for _ in range(200000):
-        cec17_test_func(v_denorm, dims, func_num=COMPLEXITY_MEASURE_FUNCTION_NUM)
-
-
-def t2_function(algorithm, dims):
-    run_single_problem((dims, COMPLEXITY_MEASURE_FUNCTION_NUM), algorithm, 200000)
-
-
 def measure_performance(algorithm, output_path):
     for dims in [10, 30, 50]:
         for func_num in range(1, 31):
@@ -135,43 +107,7 @@ def measure_performance(algorithm, output_path):
             generate_output(algorithm, res, dims, func_num, output_path)
 
 
-def measure_complexity(algorithm, output_path):
-    dims = [10, 30, 50]
-    res_table = np.zeros((len(dims), 4))
-    for i, dims in enumerate(dims):
-        start = time.time()
-        t0_function()
-        end = time.time()
-        t0 = end - start
-
-        start = time.time()
-        t1_function(dims)
-        end = time.time()
-        t1 = end - start
-
-        t2s = []
-        for _ in range(5):
-            start = time.time()
-            t2_function(algorithm, dims)
-            end = time.time()
-            t2s.append(end - start)
-
-        t2prim = mean(t2s)
-
-        res_table[i, :] = [t0, t1, t2prim, (t2prim - t1) / t0]
-
-        np.savetxt(
-            os.path.join(output_path, "complexity.txt"), res_table, delimiter=","
-        )
-
-
 @click.command()
-@click.option(
-    "--performance/--complexity",
-    "-p/-c",
-    help="Select which measures to calculate",
-    required=True,
-)
 @click.option(
     "--output-dir",
     "-o",
@@ -182,7 +118,7 @@ def measure_complexity(algorithm, output_path):
 @click.option(
     "--algo", "-a", required=True, help="Algorithm version name (class name)", type=str
 )
-def run_measurements(performance, output_dir, algo):
+def run_measurements(output_dir, algo):
     alogrithms = {
         ConstantDE.__name__: ConstantDE,
         ConstantSuccessRuleDE.__name__: ConstantSuccessRuleDE,
@@ -191,10 +127,7 @@ def run_measurements(performance, output_dir, algo):
 
     de = alogrithms[algo]()
 
-    if performance:
-        measure_performance(de, output_dir)
-    else:
-        measure_complexity(de, output_dir)
+    measure_performance(de, output_dir)
 
 
 if __name__ == "__main__":

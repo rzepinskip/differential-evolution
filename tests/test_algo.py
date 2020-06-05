@@ -64,7 +64,7 @@ def test_cec(algo_version):
     algo = algo_version(seed=SEED)
     algo_control = AlgorithmControl(call_cec, 100000, 1, 100)
 
-    result = algo.run(algo_control, bounds, init_population_uniform)
+    result = algo.run(algo_control, bounds, init_population_uniform, population_size=20)
 
     # values taken from shift_data_1.txt
     assert np.allclose(

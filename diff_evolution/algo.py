@@ -20,19 +20,20 @@ def init_population_uniform(population_size, bounds: List[Tuple[float, float]]):
 # based on https://pablormier.github.io/2017/09/05/a-tutorial-on-differential-evolution-with-python/
 class DifferentialEvolution(ABC):
     def __init__(
-        self, crossover, population_size, seed,
+        self, crossover, seed,
     ):
         if seed:
             np.random.seed(seed)
 
         self.crossover = crossover
-        self.population_size = population_size
 
     def run(
-        self, algorithm_control: AlgorithmControl, bounds: List[Tuple[float, float]], population_initializer: Callable
+        self, algorithm_control: AlgorithmControl, bounds: List[Tuple[float, float]], population_initializer: Callable, population_size = None
     ):
         dimensions = len(bounds)
-        pop = population_initializer(self.population_size, bounds)
+        if not population_size:
+            population_size = 4 * dimensions
+        pop = population_initializer(population_size, bounds)
 
         fitness = np.asarray([algorithm_control.test_func(ind) for ind in pop])
         best_idx = np.argmin(fitness)
@@ -40,8 +41,8 @@ class DifferentialEvolution(ABC):
         best = pop[best_idx]
         self.population_history = [pop]
         while algorithm_control.check_stop_criteria():
-            for j in range(self.population_size):
-                idxs = [idx for idx in range(self.population_size) if idx != j]
+            for j in range(population_size):
+                idxs = [idx for idx in range(population_size) if idx != j]
                 a, b, c = pop[np.random.choice(idxs, 3, replace=False)]
 
                 # mutation_factor = scaling factor
@@ -75,10 +76,10 @@ class DifferentialEvolution(ABC):
 
 class ConstantDE(DifferentialEvolution):
     def __init__(
-        self, mutation_factor=0.8, crossover=0.9, population_size=20, seed=None,
+        self, mutation_factor=0.8, crossover=0.9, seed=None,
     ):
         super().__init__(
-            crossover=crossover, population_size=population_size, seed=seed,
+            crossover=crossover, seed=seed,
         )
         self.mutation_factor = mutation_factor
 
@@ -88,10 +89,10 @@ class ConstantDE(DifferentialEvolution):
 
 class RandomFactorDE(DifferentialEvolution):
     def __init__(
-        self, crossover=0.9, population_size=20, seed=None,
+        self, crossover=0.9, seed=None,
     ):
         super().__init__(
-            crossover=crossover, population_size=population_size, seed=seed,
+            crossover=crossover, seed=seed,
         )
 
     def get_mutation_factor(self, current_population):
@@ -100,10 +101,10 @@ class RandomFactorDE(DifferentialEvolution):
 
 class ConstantSuccessRuleDE(DifferentialEvolution):
     def __init__(
-        self, mutation_factor=0.8, crossover=0.9, population_size=20, seed=None,
+        self, mutation_factor=0.8, crossover=0.9, seed=None,
     ):
         super().__init__(
-            crossover=crossover, population_size=population_size, seed=seed,
+            crossover=crossover, seed=seed,
         )
         self.mutation_factor = mutation_factor
 
@@ -111,10 +112,12 @@ class ConstantSuccessRuleDE(DifferentialEvolution):
         return self.mutation_factor
 
     def run(
-        self, algorithm_control: AlgorithmControl, bounds: List[Tuple[float, float]], population_initializer: Callable
+        self, algorithm_control: AlgorithmControl, bounds: List[Tuple[float, float]], population_initializer: Callable, population_size = None
     ):
         dimensions = len(bounds)
-        pop = population_initializer(self.population_size, bounds)
+        if not population_size:
+            population_size = 4 * dimensions
+        pop = population_initializer(population_size, bounds)
 
         fitness = np.asarray([algorithm_control.test_func(ind) for ind in pop])
         best_idx = np.argmin(fitness)
@@ -124,9 +127,11 @@ class ConstantSuccessRuleDE(DifferentialEvolution):
         while algorithm_control.check_stop_criteria():
             mean_prev_pop_member = np.mean(pop, axis=0)
             mean_prev_pop_member_fit = algorithm_control.test_func(mean_prev_pop_member)
+            if mean_prev_pop_member_fit is None:
+                break
 
-            for j in range(self.population_size):
-                idxs = [idx for idx in range(self.population_size) if idx != j]
+            for j in range(population_size):
+                idxs = [idx for idx in range(population_size) if idx != j]
                 a, b, c = pop[np.random.choice(idxs, 3, replace=False)]
 
                 mutation_factorant = np.clip(
@@ -151,7 +156,7 @@ class ConstantSuccessRuleDE(DifferentialEvolution):
             self.population_history += [pop]
 
             better_than_mean = sum(fitness < mean_prev_pop_member_fit)
-            if better_than_mean > 0.2 * self.population_size:
+            if better_than_mean > 0.2 * population_size:
                 self.mutation_factor = 1.22 * self.mutation_factor
             else:
                 self.mutation_factor = 0.82 * self.mutation_factor
@@ -161,10 +166,10 @@ class ConstantSuccessRuleDE(DifferentialEvolution):
 
 class RandomSuccessRuleDE(DifferentialEvolution):
     def __init__(
-        self, mutation_factor=0.8, crossover=0.9, population_size=20, seed=None,
+        self, mutation_factor=0.8, crossover=0.9, seed=None,
     ):
         super().__init__(
-            crossover=crossover, population_size=population_size, seed=seed,
+            crossover=crossover, seed=seed,
         )
         self.mutation_factor = mutation_factor
 
@@ -172,10 +177,12 @@ class RandomSuccessRuleDE(DifferentialEvolution):
         return self.mutation_factor
 
     def run(
-        self, algorithm_control: AlgorithmControl, bounds: List[Tuple[float, float]], population_initializer: Callable
+        self, algorithm_control: AlgorithmControl, bounds: List[Tuple[float, float]], population_initializer: Callable, population_size = None
     ):
         dimensions = len(bounds)
-        pop = population_initializer(self.population_size, bounds)
+        if not population_size:
+            population_size = 4 * dimensions
+        pop = population_initializer(population_size, bounds)
 
         fitness = np.asarray([algorithm_control.test_func(ind) for ind in pop])
         best_idx = np.argmin(fitness)
@@ -185,9 +192,11 @@ class RandomSuccessRuleDE(DifferentialEvolution):
         while algorithm_control.check_stop_criteria():
             mean_prev_pop_member = np.mean(pop, axis=0)
             mean_prev_pop_member_fit = algorithm_control.test_func(mean_prev_pop_member)
+            if mean_prev_pop_member_fit is None:
+                break
 
-            for j in range(self.population_size):
-                idxs = [idx for idx in range(self.population_size) if idx != j]
+            for j in range(population_size):
+                idxs = [idx for idx in range(population_size) if idx != j]
                 a, b, c = pop[np.random.choice(idxs, 3, replace=False)]
 
                 mutation_factorant = np.clip(
@@ -212,7 +221,7 @@ class RandomSuccessRuleDE(DifferentialEvolution):
             self.population_history += [pop]
 
             better_than_mean = sum(fitness < mean_prev_pop_member_fit)
-            if better_than_mean > 0.2 * self.population_size:
+            if better_than_mean > 0.2 * population_size:
                 self.mutation_factor = (
                     np.random.uniform(low=1.0, high=1.5) * self.mutation_factor
                 )

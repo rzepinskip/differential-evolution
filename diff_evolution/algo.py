@@ -118,7 +118,7 @@ class ConstantSuccessRuleDE(DifferentialEvolution):
         best = pop_denorm[best_idx]
         self.population_history = [pop_denorm]
         while algorithm_control.check_stop_criteria():
-            mean_prev_pop_member = np.mean(pop, axis=0)
+            mean_prev_pop_member = min_b + np.mean(pop, axis=0) * diff
             mean_prev_pop_member_fit = algorithm_control.test_func(mean_prev_pop_member)
 
             for j in range(self.population_size):
@@ -148,7 +148,7 @@ class ConstantSuccessRuleDE(DifferentialEvolution):
             pop_denorm = min_b + pop * diff  # just for debug
             self.population_history += [pop_denorm]
 
-            better_than_mean = sum(fitness > mean_prev_pop_member_fit)
+            better_than_mean = sum(fitness < mean_prev_pop_member_fit)
             if better_than_mean > 0.2 * self.population_size:
                 self.mutation_factor = 1.22 * self.mutation_factor
             else:
@@ -183,7 +183,7 @@ class RandomSuccessRuleDE(DifferentialEvolution):
         best = pop_denorm[best_idx]
         self.population_history = [pop_denorm]
         while algorithm_control.check_stop_criteria():
-            mean_prev_pop_member = np.mean(pop, axis=0)
+            mean_prev_pop_member = min_b + np.mean(pop, axis=0) * diff
             mean_prev_pop_member_fit = algorithm_control.test_func(mean_prev_pop_member)
 
             for j in range(self.population_size):
@@ -213,7 +213,7 @@ class RandomSuccessRuleDE(DifferentialEvolution):
             pop_denorm = min_b + pop * diff  # just for debug
             self.population_history += [pop_denorm]
 
-            better_than_mean = sum(fitness > mean_prev_pop_member_fit)
+            better_than_mean = sum(fitness < mean_prev_pop_member_fit)
             if better_than_mean > 0.2 * self.population_size:
                 self.mutation_factor = (
                     np.random.uniform(low=1.0, high=1.5) * self.mutation_factor

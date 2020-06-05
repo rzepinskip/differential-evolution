@@ -115,6 +115,7 @@ class ConstantSuccessRuleDE(DifferentialEvolution):
         pop_denorm = min_b + pop * diff
         fitness = np.asarray([algorithm_control.test_func(ind) for ind in pop_denorm])
         best_idx = np.argmin(fitness)
+        algorithm_control.update_best_fitness(fitness[best_idx])
         best = pop_denorm[best_idx]
         self.population_history = [pop_denorm]
         while algorithm_control.check_stop_criteria():
@@ -180,6 +181,7 @@ class RandomSuccessRuleDE(DifferentialEvolution):
         pop_denorm = min_b + pop * diff
         fitness = np.asarray([algorithm_control.test_func(ind) for ind in pop_denorm])
         best_idx = np.argmin(fitness)
+        algorithm_control.update_best_fitness(fitness[best_idx])
         best = pop_denorm[best_idx]
         self.population_history = [pop_denorm]
         while algorithm_control.check_stop_criteria():

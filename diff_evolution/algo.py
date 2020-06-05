@@ -49,6 +49,7 @@ class DifferentialEvolution(ABC):
         best = pop[best_idx]
         self.population_history = [pop.copy()]
         mn, mx = np.array(bounds).T
+        self.mutation_factor_history = [self.mutation_factor]
         while algorithm_control.check_stop_criteria():
             for j in range(population_size):
                 idxs = [idx for idx in range(population_size) if idx != j]
@@ -76,7 +77,7 @@ class DifferentialEvolution(ABC):
                         algorithm_control.update_best_fitness(f)
 
             self.population_history += [pop.copy()]
-
+            self.mutation_factor_history += [self.mutation_factor]
         return best
 
 
@@ -89,7 +90,7 @@ class ConstantDE(DifferentialEvolution):
         )
 
 
-class ConstantSuccessRuleDE(DifferentialEvolution):
+class ConstantSuccessRuleDEWithClip(DifferentialEvolution):
     def __init__(
         self, mutation_factor=0.8, crossover=0.9, seed=None,
     ):
@@ -115,6 +116,7 @@ class ConstantSuccessRuleDE(DifferentialEvolution):
         best = pop[best_idx]
         self.population_history = [pop.copy()]
         mn, mx = np.array(bounds).T
+        self.mutation_factor_history = [self.mutation_factor]
         while algorithm_control.check_stop_criteria():
             mean_prev_pop_member = np.mean(pop, axis=0)
             mean_prev_pop_member_fit = algorithm_control.test_func(mean_prev_pop_member)
@@ -154,11 +156,11 @@ class ConstantSuccessRuleDE(DifferentialEvolution):
             else:
                 self.mutation_factor = 0.82 * self.mutation_factor
             self.mutation_factor = np.clip(self.mutation_factor, 0.5, 2.0)
-
+            self.mutation_factor_history += [self.mutation_factor]
         return best
 
 
-class RandomSuccessRuleDE(DifferentialEvolution):
+class RandomSuccessRuleDEWithClip(DifferentialEvolution):
     def __init__(
         self, mutation_factor=0.8, crossover=0.9, seed=None,
     ):
@@ -184,6 +186,7 @@ class RandomSuccessRuleDE(DifferentialEvolution):
         best = pop[best_idx]
         self.population_history = [pop.copy()]
         mn, mx = np.array(bounds).T
+        self.mutation_factor_history = [self.mutation_factor]
         while algorithm_control.check_stop_criteria():
             mean_prev_pop_member = np.mean(pop, axis=0)
             mean_prev_pop_member_fit = algorithm_control.test_func(mean_prev_pop_member)
@@ -227,5 +230,147 @@ class RandomSuccessRuleDE(DifferentialEvolution):
                     np.random.uniform(low=0.5, high=1.0) * self.mutation_factor
                 )
             self.mutation_factor = np.clip(self.mutation_factor, 0.5, 2.0)
+            self.mutation_factor_history += [self.mutation_factor]
+        return best
 
+
+class ConstantSuccessRuleDE(DifferentialEvolution):
+    def __init__(
+        self, mutation_factor=0.8, crossover=0.9, seed=None,
+    ):
+        super().__init__(
+            mutation_factor=mutation_factor, crossover=crossover, seed=seed,
+        )
+
+    def run(
+        self,
+        algorithm_control: AlgorithmControl,
+        bounds: List[Tuple[float, float]],
+        population_initializer: Callable,
+        population_size=None,
+    ):
+        dimensions = len(bounds)
+        if not population_size:
+            population_size = 4 * dimensions
+        pop = population_initializer(population_size, bounds)
+
+        fitness = np.asarray([algorithm_control.test_func(ind) for ind in pop])
+        best_idx = np.argmin(fitness)
+        algorithm_control.update_best_fitness(fitness[best_idx])
+        best = pop[best_idx]
+        self.population_history = [pop.copy()]
+        mn, mx = np.array(bounds).T
+        self.mutation_factor_history = [self.mutation_factor]
+        while algorithm_control.check_stop_criteria():
+            mean_prev_pop_member = np.mean(pop, axis=0)
+            mean_prev_pop_member_fit = algorithm_control.test_func(mean_prev_pop_member)
+            if mean_prev_pop_member_fit is None:
+                break
+
+            for j in range(population_size):
+                idxs = [idx for idx in range(population_size) if idx != j]
+                for retry in range(population_size):
+                    a, b, c = pop[np.random.choice(idxs, 3, replace=False)]
+                    mutation_factorant = a + self.mutation_factor * (b - c)
+
+                    if within_bounds(mutation_factorant, mn, mx):
+                        break
+                    elif retry == population_size - 1:
+                        mutation_factorant = np.clip(mutation_factorant, mn, mx,)
+
+                cross_points = np.random.rand(dimensions) < self.crossover
+                trial = np.where(cross_points, mutation_factorant, pop[j])
+
+                f = algorithm_control.test_func(trial)
+                if f is None:
+                    break
+                if f < fitness[j]:
+                    fitness[j] = f
+                    pop[j] = trial
+                    if f < fitness[best_idx]:
+                        best_idx = j
+                        best = trial
+                        algorithm_control.update_best_fitness(f)
+
+            self.population_history += [pop.copy()]
+
+            better_than_mean = sum(fitness < mean_prev_pop_member_fit)
+            if better_than_mean > 0.2 * population_size:
+                self.mutation_factor = 1.22 * self.mutation_factor
+            else:
+                self.mutation_factor = 0.82 * self.mutation_factor
+            self.mutation_factor_history += [self.mutation_factor]
+        return best
+
+
+class RandomSuccessRuleDE(DifferentialEvolution):
+    def __init__(
+        self, mutation_factor=0.8, crossover=0.9, seed=None,
+    ):
+        super().__init__(
+            mutation_factor=mutation_factor, crossover=crossover, seed=seed,
+        )
+
+    def run(
+        self,
+        algorithm_control: AlgorithmControl,
+        bounds: List[Tuple[float, float]],
+        population_initializer: Callable,
+        population_size=None,
+    ):
+        dimensions = len(bounds)
+        if not population_size:
+            population_size = 4 * dimensions
+        pop = population_initializer(population_size, bounds)
+
+        fitness = np.asarray([algorithm_control.test_func(ind) for ind in pop])
+        best_idx = np.argmin(fitness)
+        algorithm_control.update_best_fitness(fitness[best_idx])
+        best = pop[best_idx]
+        self.population_history = [pop.copy()]
+        mn, mx = np.array(bounds).T
+        self.mutation_factor_history = [self.mutation_factor]
+        while algorithm_control.check_stop_criteria():
+            mean_prev_pop_member = np.mean(pop, axis=0)
+            mean_prev_pop_member_fit = algorithm_control.test_func(mean_prev_pop_member)
+            if mean_prev_pop_member_fit is None:
+                break
+
+            for j in range(population_size):
+                idxs = [idx for idx in range(population_size) if idx != j]
+                for retry in range(population_size):
+                    a, b, c = pop[np.random.choice(idxs, 3, replace=False)]
+                    mutation_factorant = a + self.mutation_factor * (b - c)
+
+                    if within_bounds(mutation_factorant, mn, mx):
+                        break
+                    elif retry == population_size - 1:
+                        mutation_factorant = np.clip(mutation_factorant, mn, mx,)
+
+                cross_points = np.random.rand(dimensions) < self.crossover
+                trial = np.where(cross_points, mutation_factorant, pop[j])
+
+                f = algorithm_control.test_func(trial)
+                if f is None:
+                    break
+                if f < fitness[j]:
+                    fitness[j] = f
+                    pop[j] = trial
+                    if f < fitness[best_idx]:
+                        best_idx = j
+                        best = trial
+                        algorithm_control.update_best_fitness(f)
+
+            self.population_history += [pop.copy()]
+
+            better_than_mean = sum(fitness < mean_prev_pop_member_fit)
+            if better_than_mean > 0.2 * population_size:
+                self.mutation_factor = (
+                    np.random.uniform(low=1.0, high=1.5) * self.mutation_factor
+                )
+            else:
+                self.mutation_factor = (
+                    np.random.uniform(low=0.5, high=1.0) * self.mutation_factor
+                )
+            self.mutation_factor_history += [self.mutation_factor]
         return best

@@ -39,7 +39,7 @@ class DifferentialEvolution(ABC):
         best_idx = np.argmin(fitness)
         algorithm_control.update_best_fitness(fitness[best_idx])
         best = pop[best_idx]
-        self.population_history = [pop]
+        self.population_history = [pop.copy()]
         while algorithm_control.check_stop_criteria():
             for j in range(population_size):
                 idxs = [idx for idx in range(population_size) if idx != j]
@@ -65,7 +65,7 @@ class DifferentialEvolution(ABC):
                         best = trial
                         algorithm_control.update_best_fitness(f)
 
-            self.population_history += [pop]
+            self.population_history += [pop.copy()]
 
         return best
 
@@ -123,7 +123,7 @@ class ConstantSuccessRuleDE(DifferentialEvolution):
         best_idx = np.argmin(fitness)
         algorithm_control.update_best_fitness(fitness[best_idx])
         best = pop[best_idx]
-        self.population_history = [pop]
+        self.population_history = [pop.copy()]
         while algorithm_control.check_stop_criteria():
             mean_prev_pop_member = np.mean(pop, axis=0)
             mean_prev_pop_member_fit = algorithm_control.test_func(mean_prev_pop_member)
@@ -153,7 +153,7 @@ class ConstantSuccessRuleDE(DifferentialEvolution):
                         best = trial
                         algorithm_control.update_best_fitness(f)
 
-            self.population_history += [pop]
+            self.population_history += [pop.copy()]
 
             better_than_mean = sum(fitness < mean_prev_pop_member_fit)
             if better_than_mean > 0.2 * population_size:
@@ -188,7 +188,7 @@ class RandomSuccessRuleDE(DifferentialEvolution):
         best_idx = np.argmin(fitness)
         algorithm_control.update_best_fitness(fitness[best_idx])
         best = pop[best_idx]
-        self.population_history = [pop]
+        self.population_history = [pop.copy()]
         while algorithm_control.check_stop_criteria():
             mean_prev_pop_member = np.mean(pop, axis=0)
             mean_prev_pop_member_fit = algorithm_control.test_func(mean_prev_pop_member)
@@ -218,7 +218,7 @@ class RandomSuccessRuleDE(DifferentialEvolution):
                         best = trial
                         algorithm_control.update_best_fitness(f)
 
-            self.population_history += [pop]
+            self.population_history += [pop.copy()]
 
             better_than_mean = sum(fitness < mean_prev_pop_member_fit)
             if better_than_mean > 0.2 * population_size:

@@ -20,11 +20,11 @@ def init_population_uniform(population_size, bounds: List[Tuple[float, float]]):
 # based on https://pablormier.github.io/2017/09/05/a-tutorial-on-differential-evolution-with-python/
 class DifferentialEvolution(ABC):
     def __init__(
-        self, crossover, seed,
+        self, mutation_factor, crossover, seed,
     ):
         if seed:
             np.random.seed(seed)
-
+        self.mutation_factor = mutation_factor
         self.crossover = crossover
 
     def run(
@@ -51,13 +51,11 @@ class DifferentialEvolution(ABC):
 
                 # mutation_factor = scaling factor
                 mutation_factorant = np.clip(
-                    a + self.get_mutation_factor(pop) * (b - c),
+                    a + self.mutation_factor * (b - c),
                     [b[0] for b in bounds],
                     [b[1] for b in bounds],
                 )
                 cross_points = np.random.rand(dimensions) < self.crossover
-                if not np.any(cross_points):
-                    cross_points[np.random.randint(0, dimensions)] = True
                 trial = np.where(cross_points, mutation_factorant, pop[j])
 
                 f = algorithm_control.test_func(trial)
@@ -75,22 +73,14 @@ class DifferentialEvolution(ABC):
 
         return best
 
-    @abstractmethod
-    def get_mutation_factor(self, current_population):
-        pass
-
 
 class ConstantDE(DifferentialEvolution):
     def __init__(
         self, mutation_factor=0.8, crossover=0.9, seed=None,
     ):
         super().__init__(
-            crossover=crossover, seed=seed,
+            mutation_factor=mutation_factor, crossover=crossover, seed=seed,
         )
-        self.mutation_factor = mutation_factor
-
-    def get_mutation_factor(self, current_population):
-        return self.mutation_factor
 
 
 class ConstantSuccessRuleDE(DifferentialEvolution):
@@ -98,12 +88,8 @@ class ConstantSuccessRuleDE(DifferentialEvolution):
         self, mutation_factor=0.8, crossover=0.9, seed=None,
     ):
         super().__init__(
-            crossover=crossover, seed=seed,
+            mutation_factor=mutation_factor, crossover=crossover, seed=seed,
         )
-        self.mutation_factor = mutation_factor
-
-    def get_mutation_factor(self, current_population):
-        return self.mutation_factor
 
     def run(
         self,
@@ -133,13 +119,11 @@ class ConstantSuccessRuleDE(DifferentialEvolution):
                 a, b, c = pop[np.random.choice(idxs, 3, replace=False)]
 
                 mutation_factorant = np.clip(
-                    a + self.get_mutation_factor(pop) * (b - c),
+                    a + self.mutation_factor * (b - c),
                     [b[0] for b in bounds],
                     [b[1] for b in bounds],
                 )
                 cross_points = np.random.rand(dimensions) < self.crossover
-                if not np.any(cross_points):
-                    cross_points[np.random.randint(0, dimensions)] = True
                 trial = np.where(cross_points, mutation_factorant, pop[j])
 
                 f = algorithm_control.test_func(trial)
@@ -161,6 +145,7 @@ class ConstantSuccessRuleDE(DifferentialEvolution):
             else:
                 self.mutation_factor = 0.82 * self.mutation_factor
             self.mutation_factor = np.clip(self.mutation_factor, 0.5, 2.0)
+
         return best
 
 
@@ -169,12 +154,8 @@ class RandomSuccessRuleDE(DifferentialEvolution):
         self, mutation_factor=0.8, crossover=0.9, seed=None,
     ):
         super().__init__(
-            crossover=crossover, seed=seed,
+            mutation_factor=mutation_factor, crossover=crossover, seed=seed,
         )
-        self.mutation_factor = mutation_factor
-
-    def get_mutation_factor(self, current_population):
-        return self.mutation_factor
 
     def run(
         self,
@@ -204,13 +185,11 @@ class RandomSuccessRuleDE(DifferentialEvolution):
                 a, b, c = pop[np.random.choice(idxs, 3, replace=False)]
 
                 mutation_factorant = np.clip(
-                    a + self.get_mutation_factor(pop) * (b - c),
+                    a + self.mutation_factor * (b - c),
                     [b[0] for b in bounds],
                     [b[1] for b in bounds],
                 )
                 cross_points = np.random.rand(dimensions) < self.crossover
-                if not np.any(cross_points):
-                    cross_points[np.random.randint(0, dimensions)] = True
                 trial = np.where(cross_points, mutation_factorant, pop[j])
 
                 f = algorithm_control.test_func(trial)

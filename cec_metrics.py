@@ -132,7 +132,7 @@ def run_measurements(output_dir, algo, dims):
     de = alogrithms[algo]()
 
     if dims is not None:
-        measure_performance(de, output_dir, dims)
+        measure_performance(de, output_dir, [dims])
     else:
         measure_performance(de, output_dir)
 

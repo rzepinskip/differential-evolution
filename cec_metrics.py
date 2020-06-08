@@ -98,8 +98,8 @@ def save_metrics_to_csv(file_path, metrics: dict):
         writer.writerow(metrics)
 
 
-def measure_performance(algorithm, output_path):
-    for dims in [10, 30, 50]:
+def measure_performance(algorithm, output_path, dimensions = [10, 30, 50], functions = range(1, 31)):
+    for dims in dimensions:
         for func_num in range(1, 31):
             if func_num == 2:
                 continue
@@ -119,7 +119,10 @@ def measure_performance(algorithm, output_path):
 @click.option(
     "--algo", "-a", required=True, help="Algorithm version name (class name)", type=str
 )
-def run_measurements(output_dir, algo):
+@click.option(
+    "--dims", "-d", help="Dimensions to be tested", type=int
+)
+def run_measurements(output_dir, algo, dims):
     alogrithms = {
         ConstantDE.__name__: ConstantDE,
         ConstantSuccessRuleDE.__name__: ConstantSuccessRuleDE,
@@ -128,7 +131,10 @@ def run_measurements(output_dir, algo):
 
     de = alogrithms[algo]()
 
-    measure_performance(de, output_dir)
+    if dims is not None:
+        measure_performance(de, output_dir, dims)
+    else:
+        measure_performance(de, output_dir)
 
 
 if __name__ == "__main__":

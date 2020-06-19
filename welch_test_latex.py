@@ -34,7 +34,7 @@ def compare_algorithms_sinlge_problem(
 
     pvalue = stats.ttest_ind(alg1_results, alg2_results, equal_var=False)[1]
 
-    if pvalue <= (1 - confidence) / 2:
+    if pvalue / 2 <= (1-confidence):
         return True if alg1_mean < alg2_mean else False
 
     return None
@@ -83,7 +83,7 @@ def compare_algorithms(alg1_dir, alg2_dir, dimension, confidence=0.95):
         if result is True:
             alg_str = f"\\textbf{{{alg1_mean:.2E}}} & {alg2_mean:.2E}         "
         elif result is False:
-            alg_str = f"{alg1_mean:.2E}          & \\textbf{{{alg2_mean:.2E}}}"
+            alg_str = f"{alg1_mean:.2E}          & \\colorbox{{pink}}\\textbf{{{alg2_mean:.2E}}}"
         latex_lines += [f"{func_str} & {alg_str}"]
 
     counter[f"{alg1_name} better"] = counter.pop(True)

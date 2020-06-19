@@ -39,9 +39,10 @@ def init_population(population_size, bounds):
 
 for algo_version, linestyle in zip(
     [
-        # ConstantDE,
+        ConstantDE,
+        # ConstantSuccessRuleDE,
         ConstantSuccessRuleDEWithClip,
-        RandomSuccessRuleDEWithClip,
+        # RandomSuccessRuleDEWithClip,
         # RandomSuccessRuleDE,
     ],
     linestyles,
@@ -68,6 +69,8 @@ for algo_version, linestyle in zip(
             label=f"{algo_version.__name__}-{retry} ({error})",
             linestyle=linestyle,
         )
+        ax[0].set_xlabel("Iteration")
+        ax[0].set_ylabel("Error")
 
         if algo_version != ConstantDE:
             ax[1].plot(
@@ -77,6 +80,8 @@ for algo_version, linestyle in zip(
                 linestyle=linestyle,
             )
             ax[1].set_ylim(0, 10)
+            ax[1].set_xlabel("Iteration")
+            ax[1].set_ylabel("Mutation factor")
 ax[0].legend()
 ax[1].legend()
 plt.show()
